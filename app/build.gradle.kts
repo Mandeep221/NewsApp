@@ -101,6 +101,14 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
 
+    // Compose Navigation
+    val navVersion = "2.7.6"
+
+    implementation("androidx.navigation:navigation-compose:$navVersion")
+
+    // Bottom navigation
+    implementation("androidx.compose.material:material:1.6.0")
+
     // Glide
     implementation("com.github.bumptech.glide:glide:4.15.1")
     kapt("com.github.bumptech.glide:compiler:4.11.0")
