@@ -84,7 +84,7 @@ fun NavGraphBuilder.news(
     }
 
     composable(route = NewsTabs.SEARCH.route) {
-        SearchScreen()
+        SearchScreen(newsViewModel)
     }
 
     composable(route = NewsTabs.PROFILE.route) {
