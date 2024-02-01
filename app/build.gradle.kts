@@ -138,7 +138,7 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0-beta03")
 
     // Coil
-    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // WorkManager with Coroutines
     implementation("androidx.work:work-runtime-ktx:2.9.0")
@@ -146,7 +146,7 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:3.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // for additional material icons
     implementation("androidx.compose.material:material-icons-extended-android:1.6.0")
