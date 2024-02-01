@@ -5,7 +5,7 @@ object NewsTabsManager {
         NewsTab(title = "Health"),
         NewsTab(title = "Sports"),
         NewsTab(title = "Technology"),
-        NewsTab(title = "Politics")
+        NewsTab(title = "Entertainment")
     )
 }
 

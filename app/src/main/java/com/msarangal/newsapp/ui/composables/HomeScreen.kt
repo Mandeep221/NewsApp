@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.msarangal.newsapp.data.remote.model.Article
 import com.msarangal.newsapp.data.remote.model.NewsResponse
-import com.msarangal.newsapp.ui.NewsUiState
+import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
 
 @Composable
@@ -48,19 +48,19 @@ fun NewsOfTheDay(article: Article, modifier: Modifier) {
 
 @Composable
 fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
-    val state by viewModel.stateFlow.collectAsState()
+    val state by viewModel.breakingNewsStateFlow.collectAsState()
 
     when (state) {
-        is NewsUiState.Failure -> {
-            ErrorState(value = (state as NewsUiState.Failure).error)
+        is BreakingNewsUiState.Failure -> {
+            ErrorState(value = (state as BreakingNewsUiState.Failure).error)
         }
 
-        NewsUiState.Loading -> {
+        BreakingNewsUiState.Loading -> {
             ErrorState(value = "Loading")
         }
 
-        is NewsUiState.Success -> {
-            NewsContent(response = (state as NewsUiState.Success).data)
+        is BreakingNewsUiState.Success -> {
+            NewsContent(response = (state as BreakingNewsUiState.Success).data)
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.composables.search.SearchScreen
 import com.msarangal.newsapp.ui.theme.NewsAppTheme
 
 object GlobalDestinations {
