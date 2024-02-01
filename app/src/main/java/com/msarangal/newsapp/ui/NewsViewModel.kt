@@ -1,5 +1,6 @@
 package com.msarangal.newsapp.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msarangal.newsapp.data.NewsRepository
@@ -8,6 +9,7 @@ import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_ENTERTAINMENT
 import com.msarangal.newsapp.util.Constants.CATEGORY_SPORTS
 import com.msarangal.newsapp.util.Constants.CATEGORY_TECHNOLOGY
+import com.msarangal.newsapp.util.Constants.SEARCH_QUERY
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val newsRepository: NewsRepository
+    private val newsRepository: NewsRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val categoryMap = mapOf(
         CATEGORY_HEALTH to 0,
@@ -26,6 +29,8 @@ class NewsViewModel @Inject constructor(
         CATEGORY_TECHNOLOGY to 2,
         CATEGORY_ENTERTAINMENT to 3
     )
+
+    val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
 
     var initialCategoryIndex = categoryMap.values.first()
 
@@ -135,6 +140,14 @@ class NewsViewModel @Inject constructor(
                     _entertainmentNewsStateFlow.value = EntertainmentNewsUiState.Success(data = it)
                 }
         }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+
+    }
+
+    fun onSearchTriggered(query: String) {
+
     }
 }
 

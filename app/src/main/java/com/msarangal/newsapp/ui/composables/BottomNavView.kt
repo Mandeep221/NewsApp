@@ -44,7 +44,7 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
                         }
                     },
                     label = { Text(stringResource(id = tab.title)) },
-                    icon = { Icon(painterResource(id = tab.icon), contentDescription = null) },
+                    icon = { Icon(imageVector = tab.icon, contentDescription = null) },
                     alwaysShowLabel = false,
                     selectedContentColor = MaterialTheme.colors.secondary,
                     unselectedContentColor = LocalContentColor.current

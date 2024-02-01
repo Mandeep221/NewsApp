@@ -1,15 +1,30 @@
 package com.msarangal.newsapp.ui.composables.search
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,6 +34,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.ui.composables.search.categories.HealthView
 import com.msarangal.newsapp.ui.composables.search.categories.PoliticsView
@@ -29,6 +56,8 @@ import com.msarangal.newsapp.util.NewsTabsManager
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SearchScreen(viewModel: NewsViewModel) {
+
+    val searchQuery by viewModel.searchQuery.collectAsState()
     val newsTabs = NewsTabsManager.newsTabs
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -45,7 +74,19 @@ fun SearchScreen(viewModel: NewsViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
+        TopView(
+            onSearchQueryChanged = viewModel::onSearchQueryChanged,
+            onSearchTriggered = viewModel::onSearchTriggered,
+            searchQuery = searchQuery
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        ScrollableTabRow(
+            modifier = Modifier
+                .fillMaxWidth(),
+            backgroundColor = Color.Transparent,
+            selectedTabIndex = selectedTabIndex,
+            edgePadding = 16.dp
+        ) {
             newsTabs.forEachIndexed { index, newsTab ->
                 Tab(
                     selected = index == selectedTabIndex,
@@ -53,7 +94,11 @@ fun SearchScreen(viewModel: NewsViewModel) {
                         selectedTabIndex = index
                     },
                     text = {
-                        Text(text = newsTab.title)
+                        Text(
+                            text = newsTab.title,
+                            style = MaterialTheme.typography.h6,
+                            fontWeight = Bold
+                        )
                     }
                 )
             }
@@ -62,7 +107,6 @@ fun SearchScreen(viewModel: NewsViewModel) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
         ) { pageIndex ->
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -77,4 +121,96 @@ fun SearchScreen(viewModel: NewsViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun TopView(
+    onSearchQueryChanged: (String) -> Unit,
+    searchQuery: String,
+    onSearchTriggered: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(text = "Discover", style = MaterialTheme.typography.h4, fontWeight = Bold)
+        Text(text = "News from all over the world", style = MaterialTheme.typography.caption)
+        Spacer(modifier = Modifier.size(20.dp))
+        SearchView(
+            onSearchQueryChanged = onSearchQueryChanged,
+            searchQuery = searchQuery,
+            onSearchTriggered = onSearchTriggered
+        )
+    }
+}
+
+@Composable
+fun SearchView(
+    onSearchQueryChanged: (String) -> Unit,
+    searchQuery: String,
+    onSearchTriggered: (String) -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val onSearchExplicitlyTriggered = {
+        keyboardController?.hide()
+        onSearchTriggered(searchQuery)
+    }
+
+    TextField(
+        colors = TextFieldDefaults.textFieldColors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search Icon",
+                tint = MaterialTheme.colors.onSurface
+            )
+        },
+        trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close Icon",
+                    modifier = Modifier.clickable {
+                        onSearchQueryChanged("")
+                    }
+                )
+            }
+        },
+        placeholder = {
+            Text(text = "Search")
+        },
+        value = searchQuery,
+        onValueChange = { if ("\n" !in it) onSearchQueryChanged(it) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onKeyEvent {
+                if (it.key == Key.Enter) {
+                    onSearchExplicitlyTriggered()
+                    true
+                } else {
+                    false
+                }
+            }
+            .testTag("searchTextField"),
+        shape = RoundedCornerShape(32.dp),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Search
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                onSearchExplicitlyTriggered()
+            }
+        ),
+        maxLines = 1,
+        singleLine = true
+    )
 }
