@@ -5,11 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import com.msarangal.newsapp.ui.HealthNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.ui.composables.BreakingNewsItems
 import com.msarangal.newsapp.ui.composables.ErrorState
-import com.msarangal.newsapp.ui.composables.NewsContent
+import com.msarangal.newsapp.ui.composables.getColorFilter
+import com.msarangal.newsapp.ui.composables.isArticleClean
 
 @Composable
 fun HealthView(viewModel: NewsViewModel) {
@@ -26,10 +28,14 @@ fun HealthView(viewModel: NewsViewModel) {
 
         is HealthNewsUiState.Success -> {
             BreakingNewsItems(
-                articles = (state as HealthNewsUiState.Success).data.articles,
-                modifier = Modifier.fillMaxSize()
+                articles = (state as HealthNewsUiState.Success).data.articles.filter {
+                    isArticleClean(
+                        it
+                    )
+                },
+                modifier = Modifier.fillMaxSize(),
+                colorFilter = ColorFilter.colorMatrix(getColorFilter())
             )
-           // NewsContent(response = (state as HealthNewsUiState.Success).data)
         }
     }
 }

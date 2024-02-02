@@ -11,8 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
@@ -27,7 +31,19 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
 
     if (currentRoute in routes) {
         BottomNavigation(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    val borderSize = 1.dp.toPx()
+                    drawLine(
+                        color = Color.LightGray,
+                        start = Offset(x = 0f, y = 0f),
+                        end = Offset(x = size.width, y = 0f),
+                        strokeWidth = borderSize
+                    )
+                },
+            backgroundColor = Color.White,
+            contentColor = Color.Black
         ) {
             tabs.forEach { tab ->
                 BottomNavigationItem(
@@ -46,7 +62,7 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
                     label = { Text(stringResource(id = tab.title)) },
                     icon = { Icon(imageVector = tab.icon, contentDescription = null) },
                     alwaysShowLabel = false,
-                    selectedContentColor = MaterialTheme.colors.secondary,
+                    selectedContentColor = MaterialTheme.colors.primary,
                     unselectedContentColor = LocalContentColor.current
                 )
             }

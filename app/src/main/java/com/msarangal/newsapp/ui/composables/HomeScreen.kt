@@ -1,5 +1,6 @@
 package com.msarangal.newsapp.ui.composables
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,8 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -32,6 +39,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -41,6 +50,7 @@ import com.msarangal.newsapp.data.remote.model.Article
 import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
+import java.time.ZonedDateTime
 
 @Composable
 fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
@@ -63,24 +73,35 @@ fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun NewsContent(response: NewsResponse) {
-    val newsOfTheDayArticle = response.articles[0]
+    val newsOfTheDayArticle = response.articles.first {
+        isArticleClean(it)
+    }
     val context = LocalContext.current
     val colorFilter = ColorFilter.colorMatrix(getColorFilter())
-    val imageModel = newsOfTheDayArticle.urlToImage ?: ImageRequest.Builder(context)
-        .placeholder(R.drawable.ic_launcher_foreground).build()
+    val imageModel = getImageModel(newsOfTheDayArticle.urlToImage, context)
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         NewsOfTheDay(
-            title = newsOfTheDayArticle.title,
+            title = newsOfTheDayArticle.title ?: "",
             imageModel = imageModel,
             modifier = Modifier.weight(0.45f),
             colorFilter = colorFilter
         )
+        Text(
+            modifier = Modifier.padding(start = 16.dp, top = 20.dp),
+            text = "Breaking News",
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.Bold
+        )
         BreakingNewsItems(
-            response.articles.filterIndexed { index, _ -> index > 0 },
-            modifier = Modifier.weight(0.55f)
+            response.articles.filterIndexed { index, _ -> index > 0 }.filter { isArticleClean(it) },
+            modifier = Modifier
+                .weight(0.55f)
+                .padding(vertical = 8.dp),
+            colorFilter = colorFilter
         )
     }
 }
@@ -97,7 +118,8 @@ fun NewsOfTheDay(
         contentAlignment = Alignment.BottomStart
     ) {
         AsyncImage(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize(),
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -105,15 +127,20 @@ fun NewsOfTheDay(
         )
         Column(
             modifier = modifier
-                .wrapContentSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                    )
+                )
+                .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 modifier = Modifier
                     .background(
-                        color = Color.White.copy(alpha = 0.5F),
+                        color = Color.White.copy(alpha = 0.3F),
                         shape = RoundedCornerShape(size = 24.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -151,22 +178,74 @@ fun NewsOfTheDay(
 }
 
 @Composable
-fun BreakingNewsItems(articles: List<Article>, modifier: Modifier) {
+fun BreakingNewsItems(articles: List<Article>, modifier: Modifier, colorFilter: ColorFilter) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .background(color = Color.Yellow)
+            .padding(horizontal = 16.dp)
     ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             articles.forEach {
                 item {
-                    Text(text = it.title)
+                    val zonedDateTime = ZonedDateTime.parse(it.publishedAt)
+                    val dateString =
+                        "${zonedDateTime.dayOfMonth}/${zonedDateTime.monthValue}/${zonedDateTime.year}"
+                    BreakingNewsItem(
+                        imgUrl = it.urlToImage,
+                        title = it.title ?: "",
+                        time = dateString,
+                        author = it.author ?: "Peter Parker",
+                        colorFilter = colorFilter
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun BreakingNewsItem(
+    imgUrl: String?,
+    title: String,
+    time: String,
+    author: String,
+    colorFilter: ColorFilter
+) {
+    Column(
+        modifier = Modifier.width(200.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        AsyncImage(
+            model = getImageModel(imgUrl, LocalContext.current),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+            colorFilter = colorFilter,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        )
+        Text(
+            text = title,
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                fontSize = TextUnit(14f, TextUnitType.Sp)
+            ),
+            lineHeight = 20.sp
+        )
+        Spacer(modifier = Modifier.size(2.dp))
+        Text(
+            text = time,
+            style = MaterialTheme.typography.caption,
+            color = Color.Black.copy(alpha = 0.55f)
+        )
+
+        Text(
+            text = author,
+            style = MaterialTheme.typography.caption,
+            color = Color.Black.copy(alpha = 0.5f)
+        )
     }
 }
 
@@ -183,7 +262,7 @@ fun NewsHomeScreenPreview() {
 //    }
 }
 
-private fun getColorFilter(): ColorMatrix {
+fun getColorFilter(): ColorMatrix {
     val contrast = 2f // 0f..10f (1 should be default)
     val brightness = -120f // -255f..255f (0 should be default)
     val colorMatrix = floatArrayOf(
@@ -194,3 +273,12 @@ private fun getColorFilter(): ColorMatrix {
     )
     return ColorMatrix(colorMatrix)
 }
+
+private fun getImageModel(imgUrl: String?, context: Context): Any {
+    return imgUrl ?: ImageRequest.Builder(context)
+        .placeholder(R.drawable.ic_launcher_foreground).build()
+}
+
+fun isArticleClean(article: Article) =
+    article.title.isNullOrEmpty().not() && article.title?.contains("Removed", ignoreCase = true)
+        ?.not() ?: false
