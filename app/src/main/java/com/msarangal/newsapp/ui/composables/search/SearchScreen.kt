@@ -46,10 +46,6 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.msarangal.newsapp.ui.NewsViewModel
-import com.msarangal.newsapp.ui.composables.search.categories.HealthView
-import com.msarangal.newsapp.ui.composables.search.categories.PoliticsView
-import com.msarangal.newsapp.ui.composables.search.categories.SportsView
-import com.msarangal.newsapp.ui.composables.search.categories.TechnologyView
 import com.msarangal.newsapp.util.NewsTabsManager
 
 @OptIn(ExperimentalFoundationApi::class)

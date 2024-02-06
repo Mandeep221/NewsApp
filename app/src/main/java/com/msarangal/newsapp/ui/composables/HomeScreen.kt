@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
@@ -26,10 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -51,6 +48,7 @@ import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
 import java.time.ZonedDateTime
+import java.util.Locale
 
 @Composable
 fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
@@ -114,12 +112,16 @@ fun NewsOfTheDay(
     colorFilter: ColorFilter
 ) {
     Box(
-        modifier = modifier.background(color = Color.LightGray),
+        modifier = modifier
+            .background(
+                color = Color.Transparent
+            ).padding(horizontal = 16.dp),
         contentAlignment = Alignment.BottomStart
     ) {
         AsyncImage(
             modifier = modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .clip(RoundedCornerShape(24.dp)),
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -127,6 +129,7 @@ fun NewsOfTheDay(
         )
         Column(
             modifier = modifier
+                .clip(RoundedCornerShape(24.dp))
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
@@ -179,27 +182,29 @@ fun NewsOfTheDay(
 
 @Composable
 fun BreakingNewsItems(articles: List<Article>, modifier: Modifier, colorFilter: ColorFilter) {
-    Column(
+    LazyRow(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            articles.forEach {
-                item {
-                    val zonedDateTime = ZonedDateTime.parse(it.publishedAt)
-                    val dateString =
-                        "${zonedDateTime.dayOfMonth}/${zonedDateTime.monthValue}/${zonedDateTime.year}"
-                    BreakingNewsItem(
-                        imgUrl = it.urlToImage,
-                        title = it.title ?: "",
-                        time = dateString,
-                        author = it.author ?: "Peter Parker",
-                        colorFilter = colorFilter
-                    )
-                }
+        articles.forEach {
+            item {
+                val zonedDateTime = ZonedDateTime.parse(it.publishedAt)
+                val dateString =
+                    "${
+                        zonedDateTime.month.getDisplayName(
+                            java.time.format.TextStyle.FULL,
+                            Locale.CANADA
+                        )
+                    } ${zonedDateTime.dayOfMonth}, ${zonedDateTime.year}"
+                BreakingNewsItem(
+                    imgUrl = it.urlToImage,
+                    title = it.title ?: "",
+                    time = dateString,
+                    author = it.author ?: "Peter Parker",
+                    colorFilter = colorFilter
+                )
             }
         }
     }
@@ -223,6 +228,7 @@ fun BreakingNewsItem(
             contentScale = ContentScale.Crop,
             colorFilter = colorFilter,
             modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth()
                 .height(200.dp)
         )
@@ -274,7 +280,7 @@ fun getColorFilter(): ColorMatrix {
     return ColorMatrix(colorMatrix)
 }
 
-private fun getImageModel(imgUrl: String?, context: Context): Any {
+fun getImageModel(imgUrl: String?, context: Context): Any {
     return imgUrl ?: ImageRequest.Builder(context)
         .placeholder(R.drawable.ic_launcher_foreground).build()
 }

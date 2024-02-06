@@ -1,4 +1,4 @@
-package com.msarangal.newsapp.ui.composables.search.categories
+package com.msarangal.newsapp.ui.composables.search
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -7,28 +7,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import com.msarangal.newsapp.ui.NewsViewModel
-import com.msarangal.newsapp.ui.EntertainmentNewsUiState
-import com.msarangal.newsapp.ui.composables.BreakingNewsItems
+import com.msarangal.newsapp.ui.SportsNewsUiState
 import com.msarangal.newsapp.ui.composables.ErrorState
 import com.msarangal.newsapp.ui.composables.getColorFilter
 import com.msarangal.newsapp.ui.composables.isArticleClean
 
 @Composable
-fun PoliticsView(viewModel: NewsViewModel) {
-    val state by viewModel.entertainmentNewsStateFlow.collectAsState()
+fun SportsView(viewModel: NewsViewModel) {
+    val state by viewModel.sportsNewsStateFlow.collectAsState()
 
     when (state) {
-        is EntertainmentNewsUiState.Failure -> {
-            ErrorState(value = (state as EntertainmentNewsUiState.Failure).error)
+        is SportsNewsUiState.Failure -> {
+            ErrorState(value = (state as SportsNewsUiState.Failure).error)
         }
 
-        EntertainmentNewsUiState.Loading -> {
+        SportsNewsUiState.Loading -> {
             ErrorState(value = "Loading")
         }
 
-        is EntertainmentNewsUiState.Success -> {
-            BreakingNewsItems(
-                articles = (state as EntertainmentNewsUiState.Success).data.articles.filter {
+        is SportsNewsUiState.Success -> {
+            CategoryNewsItems(
+                articles = (state as SportsNewsUiState.Success).data.articles.filter {
                     isArticleClean(
                         it
                     )

@@ -32,6 +32,7 @@ fun NewsApp(
     NewsAppTheme {
         val tabs = NewsTabs.values().toList()
         Scaffold(
+            topBar = { TopBarView() },
             bottomBar = { BottomNavView(tabs = tabs, navController = navController) }
         ) {
             val modifier = Modifier

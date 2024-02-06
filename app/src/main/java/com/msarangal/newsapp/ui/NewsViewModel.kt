@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,6 +54,8 @@ class NewsViewModel @Inject constructor(
     private val _entertainmentNewsStateFlow =
         MutableStateFlow<EntertainmentNewsUiState>(EntertainmentNewsUiState.Loading)
     val entertainmentNewsStateFlow = _entertainmentNewsStateFlow.asStateFlow()
+
+    private val stateLock = Mutex() // For synchronization
 
     init {
         fetchBreakingNews()
