@@ -50,11 +50,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
 }
 
 dependencies {
 
-    val lifeCycleVersion = "2.6.2"
+    testImplementation("junit:junit:4.12")
+    val lifeCycleVersion = "2.7.0"
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifeCycleVersion")
@@ -96,7 +102,9 @@ dependencies {
 
     // Coroutine Lifecycle Scopes
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifeCycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifeCycleVersion")
 
     // Navigation Components
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
@@ -148,12 +156,23 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    // adapter for using rxAndroid with retrofit
+    implementation("com.github.akarnokd:rxjava3-retrofit-adapter:3.0.0")
+    // adapter for using livedata with retrofit
+    implementation("com.github.leonardoxh:retrofit2-livedata-adapter:1.1.2")
 
     // for additional material icons
     implementation("androidx.compose.material:material-icons-extended-android:1.6.0")
 
     // For DateTime/ZonedDateTime Api to not require a min sdk of 26 (supports until 21)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    // RxJava and RxAndroid
+    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    // (see https://github.com/ReactiveX/RxJava/releases for latest 3.x.x version)
+    implementation("io.reactivex.rxjava3:rxjava:3.1.5")
 }
 
 kapt {

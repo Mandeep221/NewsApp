@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.msarangal.newsapp.R
@@ -47,13 +48,13 @@ import com.msarangal.newsapp.data.remote.model.Article
 import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.theme.NewsAppTheme
 import java.time.ZonedDateTime
 import java.util.Locale
 
 @Composable
 fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
-    val state by viewModel.breakingNewsStateFlow.collectAsState()
-
+    val state by viewModel.breakingNewsStateFlow.collectAsStateWithLifecycle()
     when (state) {
         is BreakingNewsUiState.Failure -> {
             ErrorState(value = (state as BreakingNewsUiState.Failure).error)
@@ -115,7 +116,8 @@ fun NewsOfTheDay(
         modifier = modifier
             .background(
                 color = Color.Transparent
-            ).padding(horizontal = 16.dp),
+            )
+            .padding(horizontal = 16.dp),
         contentAlignment = Alignment.BottomStart
     ) {
         AsyncImage(
@@ -262,10 +264,19 @@ fun ErrorState(value: String) {
 
 @Preview(showBackground = true)
 @Composable
-fun NewsHomeScreenPreview() {
-//    NewsAppTheme {
-//        NewsHomeScreen("Android")
-//    }
+fun NewsOfTheDayPreview() {
+    val imageModel = ImageRequest.Builder(LocalContext.current)
+        .placeholder(R.drawable.ic_launcher_foreground).build()
+    NewsAppTheme {
+        NewsOfTheDay(
+            title = "This is the news of the day",
+            imageModel = imageModel,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp),
+            colorFilter = ColorFilter.colorMatrix(getColorFilter())
+        )
+    }
 }
 
 fun getColorFilter(): ColorMatrix {

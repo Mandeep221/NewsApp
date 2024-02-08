@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +44,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.util.NewsTabsManager
 
@@ -52,7 +52,7 @@ import com.msarangal.newsapp.util.NewsTabsManager
 @Composable
 fun SearchScreen(viewModel: NewsViewModel) {
 
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val newsTabs = NewsTabsManager.newsTabs
     var selectedTabIndex by remember {
         mutableIntStateOf(0)

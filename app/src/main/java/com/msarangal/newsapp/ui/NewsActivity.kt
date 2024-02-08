@@ -8,13 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.msarangal.newsapp.ui.composables.HomeScreen
 import com.msarangal.newsapp.ui.composables.NewsApp
 import com.msarangal.newsapp.ui.theme.NewsAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class NewsActivity : ComponentActivity() {
 
     private val newsViewModel: NewsViewModel by viewModels()
 

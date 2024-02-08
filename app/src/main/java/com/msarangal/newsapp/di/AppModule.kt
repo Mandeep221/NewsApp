@@ -1,5 +1,6 @@
 package com.msarangal.newsapp.di
 
+import com.github.leonardoxh.livedatacalladapter.LiveDataCallAdapterFactory
 import com.msarangal.newsapp.data.NewsRepository
 import com.msarangal.newsapp.data.NewsRepositoryImpl
 import com.msarangal.newsapp.data.remote.NewsApiService
@@ -8,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import hu.akarnokd.rxjava3.retrofit.RxJava3CallAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -34,6 +36,8 @@ object AppModule {
         .baseUrl(BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
+        .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+        .addCallAdapterFactory(LiveDataCallAdapterFactory.create())
         .build()
         .create(NewsApiService::class.java)
 
