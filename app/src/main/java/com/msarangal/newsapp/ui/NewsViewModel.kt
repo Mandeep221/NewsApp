@@ -1,14 +1,13 @@
 package com.msarangal.newsapp.ui
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msarangal.newsapp.data.NewsRepository
 import com.msarangal.newsapp.data.remote.model.Article
 import com.msarangal.newsapp.data.remote.model.NewsResponse
-import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_ENTERTAINMENT
+import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_SPORTS
 import com.msarangal.newsapp.util.Constants.CATEGORY_TECHNOLOGY
 import com.msarangal.newsapp.util.Constants.SEARCH_QUERY
@@ -17,15 +16,17 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,21 +71,32 @@ class NewsViewModel @Inject constructor(
     private val stateLock = Mutex() // For synchronization
 
     init {
-        //fetchBreakingNews()
+        fetchBreakingNews()
         fetchHealthNews()
         fetchSportsNews()
         fetchTechNews()
         fetchPoliticsNews()
 
         // Rx
-        fetchBreakingNewsObservable()
+        // fetchBreakingNewsObservable()
     }
 
     private fun fetchBreakingNews() {
         viewModelScope.launch {
-
+            var currentDelay = 1000L
+            val delayFactor = 2
             _breakingNewsStateFlow.value = BreakingNewsUiState.Loading
             newsRepository.getBreakingNews()
+                .flowOn(Dispatchers.IO)
+                .retry(retries = 3) { cause ->
+                    if (cause is IOException) {
+                        delay(currentDelay)
+                        currentDelay = (currentDelay * delayFactor)
+                        return@retry true
+                    } else {
+                        return@retry false
+                    }
+                }
                 .catch {
                     _breakingNewsStateFlow.value =
                         BreakingNewsUiState.Failure(
@@ -113,16 +125,33 @@ class NewsViewModel @Inject constructor(
             })
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        disposable.dispose()
-    }
-
     private fun fetchHealthNews() {
         viewModelScope.launch {
+            var currentDelay = 1000L
+            val delayFactor = 2
             _healthNewsStateFlow.value = HealthNewsUiState.Loading
             newsRepository.getBreakingNewsForCategory(category = CATEGORY_HEALTH)
+                .zip(newsRepository.getBreakingNewsForCategory(category = CATEGORY_TECHNOLOGY)) { responseHealth, responseTech ->
+                    val combinedArticles = mutableListOf<Article>().apply {
+                        addAll(responseHealth.articles)
+                        addAll(responseTech.articles)
+                    }
+                    NewsResponse(
+                        articles = combinedArticles,
+                        status = responseHealth.status,
+                        totalResults = responseTech.totalResults + responseHealth.totalResults
+                    )
+                }
                 .flowOn(Dispatchers.IO)
+                .retry(retries = 3) { cause ->
+                    if (cause is IOException) {
+                        delay(currentDelay)
+                        currentDelay = (currentDelay * delayFactor)
+                        return@retry true
+                    } else {
+                        return@retry false
+                    }
+                }
                 .catch {
                     _healthNewsStateFlow.value =
                         HealthNewsUiState.Failure(
@@ -137,9 +166,20 @@ class NewsViewModel @Inject constructor(
 
     private fun fetchSportsNews() {
         viewModelScope.launch {
+            var currentDelay = 1000L
+            val delayFactor = 2
             _sportsNewsStateFlow.value = SportsNewsUiState.Loading
             newsRepository.getBreakingNewsForCategory(category = CATEGORY_SPORTS)
                 .flowOn(Dispatchers.IO)
+                .retry(retries = 3) { cause ->
+                    if (cause is IOException) {
+                        delay(currentDelay)
+                        currentDelay = (currentDelay * delayFactor)
+                        return@retry true
+                    } else {
+                        return@retry false
+                    }
+                }
                 .catch {
                     _sportsNewsStateFlow.value =
                         SportsNewsUiState.Failure(
@@ -154,9 +194,20 @@ class NewsViewModel @Inject constructor(
 
     private fun fetchTechNews() {
         viewModelScope.launch {
+            var currentDelay = 1000L
+            val delayFactor = 2
             _techNewsStateFlow.value = TechNewsUiState.Loading
             newsRepository.getBreakingNewsForCategory(category = CATEGORY_TECHNOLOGY)
                 .flowOn(Dispatchers.IO)
+                .retry(retries = 3) { cause ->
+                    if (cause is IOException) {
+                        delay(currentDelay)
+                        currentDelay = (currentDelay * delayFactor)
+                        return@retry true
+                    } else {
+                        return@retry false
+                    }
+                }
                 .catch {
                     _techNewsStateFlow.value =
                         TechNewsUiState.Failure(
@@ -171,9 +222,20 @@ class NewsViewModel @Inject constructor(
 
     private fun fetchPoliticsNews() {
         viewModelScope.launch {
+            var currentDelay = 1000L
+            val delayFactor = 2
             _entertainmentNewsStateFlow.value = EntertainmentNewsUiState.Loading
             newsRepository.getBreakingNewsForCategory(category = CATEGORY_ENTERTAINMENT)
                 .flowOn(Dispatchers.IO)
+                .retry(retries = 3) { cause ->
+                    if (cause is IOException) {
+                        delay(currentDelay)
+                        currentDelay = (currentDelay * delayFactor)
+                        return@retry true
+                    } else {
+                        return@retry false
+                    }
+                }
                 .catch {
                     _entertainmentNewsStateFlow.value =
                         EntertainmentNewsUiState.Failure(
@@ -192,6 +254,11 @@ class NewsViewModel @Inject constructor(
 
     fun onSearchTriggered(query: String) {
 
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
     }
 }
 

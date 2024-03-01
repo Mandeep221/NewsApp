@@ -21,10 +21,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
@@ -41,6 +47,41 @@ class RxDemoViewModel @Inject constructor(
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.d("TestDrake", throwable.toString())
+    }
+
+    private val flowFruits = viewModelScope.launch {
+        val flowFruits = flow {
+            emit("Grapes")
+            delay(1000)
+            emit("Cherry")
+            delay(1000)
+            emit("Blueberry")
+            delay(1000)
+        }
+
+        val flowBooze = flow {
+            emit("Wine")
+            delay(1000)
+            emit("Rum")
+            delay(1000)
+            emit("Whiskey")
+            delay(1000)
+        }
+
+        flowFruits.combine(flowBooze) { fruit, booze ->
+            "Fruit: $fruit, Booze: $booze"
+        }.collect {
+            Log.d("Sheru", it)
+        }
+    }
+
+    val flowOfFruits = flow {
+        emit("Grapes")
+        delay(1000)
+        emit("Cherry")
+        delay(1000)
+        emit("Mango")
+        delay(1000)
     }
 
     private val _post = MutableStateFlow<List<String>>(emptyList())
@@ -68,7 +109,19 @@ class RxDemoViewModel @Inject constructor(
         }
         .observeOn(AndroidSchedulers.mainThread())
 
+//    private val _stateFlowFruits = MutableStateFlow("")
+//    val stateFlowFruits = _stateFlowFruits.asStateFlow()
+    private val _stateFlowFruits = MutableSharedFlow<String>(0)
+    val stateFlowFruits = _stateFlowFruits.asSharedFlow()
+
     init {
+        viewModelScope.launch {
+            delay(2000)
+            _stateFlowFruits.emit("Manu")
+            delay(3000)
+            _stateFlowFruits.emit("Nanu")
+        }
+
         disposables.add(
             taskObservable.subscribe(
                 {// onNext

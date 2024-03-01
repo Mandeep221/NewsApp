@@ -15,7 +15,11 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class NewsActivity : ComponentActivity() {
 
-    private val newsViewModel: NewsViewModel by viewModels()
+    /**
+     * This viewModel is not needed here because compose can directly access the
+     * viewModel that is scoped to the activity.
+     */
+//    private val newsViewModel: NewsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +29,7 @@ class NewsActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    NewsApp(viewModel = newsViewModel)
+                    NewsApp()
                 }
             }
         }

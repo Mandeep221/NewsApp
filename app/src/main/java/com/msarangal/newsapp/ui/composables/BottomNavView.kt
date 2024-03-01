@@ -16,6 +16,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -46,6 +48,7 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
             contentColor = Color.Black
         ) {
             tabs.forEach { tab ->
+                val tabTitle = stringResource(id = tab.title)
                 BottomNavigationItem(
                     selected = currentRoute == tab.route,
                     onClick = {
@@ -59,11 +62,12 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
                             }
                         }
                     },
-                    label = { Text(stringResource(id = tab.title)) },
+                    label = { Text(tabTitle) },
                     icon = { Icon(imageVector = tab.icon, contentDescription = null) },
                     alwaysShowLabel = false,
                     selectedContentColor = MaterialTheme.colors.primary,
-                    unselectedContentColor = LocalContentColor.current
+                    unselectedContentColor = LocalContentColor.current,
+                    modifier = Modifier.semantics { contentDescription = "Option $tabTitle" }
                 )
             }
         }

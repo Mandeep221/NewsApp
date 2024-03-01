@@ -41,6 +41,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -67,7 +69,7 @@ fun SearchScreen(viewModel: NewsViewModel) {
         selectedTabIndex = pagerState.currentPage
     }
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().semantics { contentDescription = "Search Screen View" }
     ) {
         TopView(
             onSearchQueryChanged = viewModel::onSearchQueryChanged,

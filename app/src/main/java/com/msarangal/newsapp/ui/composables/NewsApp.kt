@@ -25,7 +25,7 @@ object GlobalDestinations {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsApp(
-    viewModel: NewsViewModel
+    viewModel: NewsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -73,7 +73,7 @@ fun NewsApp(
 
 fun NavGraphBuilder.news(
     newsViewModel: NewsViewModel,
-    navController: NavController,
+    navController: NavController, // this needs to be removed. pass action lambda instead
     modifier: Modifier
 ) {
     composable(

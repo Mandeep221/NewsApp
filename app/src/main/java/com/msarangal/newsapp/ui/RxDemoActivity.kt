@@ -43,6 +43,7 @@ fun RxView(value: String, viewModel: RxDemoViewModel) {
     val resul2 by viewModel.postState.collectAsStateWithLifecycle()
     val postsCount by viewModel.postCommentCount.collectAsStateWithLifecycle()
     val postLiveData by viewModel.postLiveData.observeAsState()
+    val fruit by viewModel.stateFlowFruits.collectAsStateWithLifecycle("Initial")
 
     val context = LocalContext.current
 
@@ -51,35 +52,23 @@ fun RxView(value: String, viewModel: RxDemoViewModel) {
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (result) {
-            is Resource.Success -> {
-                Log.d("DrakeYou", "Result 1")
-                Text(text = result.data?.size.toString())
-            }
 
-            is Resource.Error -> {
-                Text(text = result.message.toString())
-            }
+        Text(text = fruit)
 
-            is Resource.Loading -> {
-                Text(text = "Loading..")
-            }
-        }
-
-        when (resul2) {
-            is Resource.Success -> {
-                Log.d("DrakeYou", "Result 2")
-                Text(text = result.data?.size.toString())
-            }
-
-            is Resource.Error -> {
-                Text(text = result.message.toString())
-            }
-
-            is Resource.Loading -> {
-                Text(text = "Loading..")
-            }
-        }
+//        when (result) {
+//            is Resource.Success -> {
+//                Log.d("DrakeYou", "Result 1")
+//                Text(text = result.data?.size.toString())
+//            }
+//
+//            is Resource.Error -> {
+//                Text(text = result.message.toString())
+//            }
+//
+//            is Resource.Loading -> {
+//                Text(text = "Loading..")
+//            }
+//        }
     }
 }
 
