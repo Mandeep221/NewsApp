@@ -27,7 +27,7 @@ fun SportsView(viewModel: NewsViewModel) {
 
         is SportsNewsUiState.Success -> {
             CategoryNewsItems(
-                articles = (state as SportsNewsUiState.Success).data.articles.filter {
+                networkArticles = (state as SportsNewsUiState.Success).data.articles.filter {
                     isArticleClean(
                         it
                     )

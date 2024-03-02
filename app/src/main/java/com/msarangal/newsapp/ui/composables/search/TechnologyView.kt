@@ -27,7 +27,7 @@ fun TechnologyView(viewModel: NewsViewModel) {
 
         is TechNewsUiState.Success -> {
             CategoryNewsItems(
-                articles = (state as TechNewsUiState.Success).data.articles.filter {
+                networkArticles = (state as TechNewsUiState.Success).data.articles.filter {
                     isArticleClean(
                         it
                     )

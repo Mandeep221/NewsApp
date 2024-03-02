@@ -27,7 +27,7 @@ fun PoliticsView(viewModel: NewsViewModel) {
 
         is EntertainmentNewsUiState.Success -> {
             CategoryNewsItems(
-                articles = (state as EntertainmentNewsUiState.Success).data.articles.filter {
+                networkArticles = (state as EntertainmentNewsUiState.Success).data.articles.filter {
                     isArticleClean(
                         it
                     )

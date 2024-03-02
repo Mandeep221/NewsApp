@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,19 +26,19 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.msarangal.newsapp.data.remote.model.Article
+import com.msarangal.newsapp.data.remote.model.NetworkArticle
 import com.msarangal.newsapp.ui.composables.getImageModel
 import java.time.ZonedDateTime
 import java.util.Locale
 
 @Composable
-fun CategoryNewsItems(articles: List<Article>, modifier: Modifier, colorFilter: ColorFilter) {
+fun CategoryNewsItems(networkArticles: List<NetworkArticle>, modifier: Modifier, colorFilter: ColorFilter) {
     LazyColumn(
         modifier = modifier.padding(horizontal = 16.dp),
         contentPadding = PaddingValues(vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        articles.forEach {
+        networkArticles.forEach {
             item {
                 val zonedDateTime = ZonedDateTime.parse(it.publishedAt)
                 val dateString =

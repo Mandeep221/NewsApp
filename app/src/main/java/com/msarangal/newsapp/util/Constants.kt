@@ -11,4 +11,6 @@ object Constants {
     const val CATEGORY_ENTERTAINMENT = "Entertainment"
 
     const val SEARCH_QUERY = "searchQuery"
+
+    const val NEWS_DB = "news_database"
 }

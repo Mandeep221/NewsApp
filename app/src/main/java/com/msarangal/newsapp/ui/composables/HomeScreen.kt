@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.msarangal.newsapp.R
-import com.msarangal.newsapp.data.remote.model.Article
+import com.msarangal.newsapp.data.remote.model.NetworkArticle
 import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
@@ -181,14 +181,14 @@ fun NewsOfTheDay(
 }
 
 @Composable
-fun BreakingNewsItems(articles: List<Article>, modifier: Modifier, colorFilter: ColorFilter) {
+fun BreakingNewsItems(networkArticles: List<NetworkArticle>, modifier: Modifier, colorFilter: ColorFilter) {
     LazyRow(
         modifier = modifier
             .fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        articles.forEach {
+        networkArticles.forEach {
             item {
                 val zonedDateTime = ZonedDateTime.parse(it.publishedAt)
                 val dateString =
@@ -285,6 +285,6 @@ fun getImageModel(imgUrl: String?, context: Context): Any {
         .placeholder(R.drawable.ic_launcher_foreground).build()
 }
 
-fun isArticleClean(article: Article) =
-    article.title.isNullOrEmpty().not() && article.title?.contains("Removed", ignoreCase = true)
+fun isArticleClean(networkArticle: NetworkArticle) =
+    networkArticle.title.isNullOrEmpty().not() && networkArticle.title?.contains("Removed", ignoreCase = true)
         ?.not() ?: false

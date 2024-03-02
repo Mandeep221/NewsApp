@@ -27,7 +27,7 @@ fun HealthView(viewModel: NewsViewModel) {
 
         is HealthNewsUiState.Success -> {
             CategoryNewsItems(
-                articles = (state as HealthNewsUiState.Success).data.articles.filter {
+                networkArticles = (state as HealthNewsUiState.Success).data.articles.filter {
                     isArticleClean(
                         it
                     )
