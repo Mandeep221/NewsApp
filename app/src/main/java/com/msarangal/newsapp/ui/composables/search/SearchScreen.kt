@@ -27,9 +27,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,8 +51,6 @@ import com.msarangal.newsapp.util.NewsTabsManager
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SearchScreen(viewModel: NewsViewModel) {
-
-    val searchQuery by viewModel.searchQuery.collectAsState()
     val newsTabs = NewsTabsManager.newsTabs
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -72,7 +70,6 @@ fun SearchScreen(viewModel: NewsViewModel) {
         TopView(
             onSearchQueryChanged = viewModel::onSearchQueryChanged,
             onSearchTriggered = viewModel::onSearchTriggered,
-            searchQuery = searchQuery
         )
         Spacer(modifier = Modifier.size(16.dp))
         ScrollableTabRow(
@@ -121,7 +118,6 @@ fun SearchScreen(viewModel: NewsViewModel) {
 @Composable
 fun TopView(
     onSearchQueryChanged: (String) -> Unit,
-    searchQuery: String,
     onSearchTriggered: (String) -> Unit
 ) {
     Column(
@@ -135,7 +131,6 @@ fun TopView(
         Spacer(modifier = Modifier.size(20.dp))
         SearchView(
             onSearchQueryChanged = onSearchQueryChanged,
-            searchQuery = searchQuery,
             onSearchTriggered = onSearchTriggered
         )
     }
@@ -144,9 +139,11 @@ fun TopView(
 @Composable
 fun SearchView(
     onSearchQueryChanged: (String) -> Unit,
-    searchQuery: String,
     onSearchTriggered: (String) -> Unit
 ) {
+    var searchQuery by remember {
+        mutableStateOf("")
+    }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -183,7 +180,10 @@ fun SearchView(
             Text(text = "Search")
         },
         value = searchQuery,
-        onValueChange = { if ("\n" !in it) onSearchQueryChanged(it) },
+        onValueChange = {
+            searchQuery = it
+            onSearchQueryChanged(it)
+                        },
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
