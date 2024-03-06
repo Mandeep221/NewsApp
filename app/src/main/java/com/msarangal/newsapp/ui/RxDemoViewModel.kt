@@ -12,12 +12,16 @@ import com.msarangal.newsapp.util.Constants
 import com.msarangal.newsapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -28,17 +32,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMap
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
-import kotlin.system.measureTimeMillis
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class RxDemoViewModel @Inject constructor(
     private val newsRepository: NewsRepository,
@@ -49,31 +55,20 @@ class RxDemoViewModel @Inject constructor(
         Log.d("TestDrake", throwable.toString())
     }
 
-    private val flowFruits = viewModelScope.launch {
-        val flowFruits = flow {
-            emit("Grapes")
-            delay(1000)
-            emit("Cherry")
-            delay(1000)
-            emit("Blueberry")
-            delay(1000)
-        }
+    private val _sharedFlow = MutableSharedFlow<Boolean>()
+    val sharedFlow = _sharedFlow.asSharedFlow()
 
-        val flowBooze = flow {
-            emit("Wine")
-            delay(1000)
-            emit("Rum")
-            delay(1000)
-            emit("Whiskey")
-            delay(1000)
-        }
+    data class ShoppingBag(val list: List<String>)
 
-        flowFruits.combine(flowBooze) { fruit, booze ->
-            "Fruit: $fruit, Booze: $booze"
-        }.collect {
-            Log.d("Sheru", it)
-        }
-    }
+    val groceryItems = listOf(
+        ShoppingBag(listOf("Milk", "Eggs", "Yogurt")),
+        ShoppingBag(listOf("Carrots", "Eggplant", "Potatoes"))
+    )
+
+    val clothingItems = listOf(
+        ShoppingBag(listOf("Shoes", "Slippers", "Socks")),
+        ShoppingBag(listOf("Shirt", "Pant", "Tshirt"))
+    )
 
     val flowOfFruits = flow {
         emit("Grapes")
@@ -109,19 +104,12 @@ class RxDemoViewModel @Inject constructor(
         }
         .observeOn(AndroidSchedulers.mainThread())
 
-//    private val _stateFlowFruits = MutableStateFlow("")
+    //    private val _stateFlowFruits = MutableStateFlow("")
 //    val stateFlowFruits = _stateFlowFruits.asStateFlow()
     private val _stateFlowFruits = MutableSharedFlow<String>(0)
     val stateFlowFruits = _stateFlowFruits.asSharedFlow()
 
     init {
-        viewModelScope.launch {
-            delay(2000)
-            _stateFlowFruits.emit("Manu")
-            delay(3000)
-            _stateFlowFruits.emit("Nanu")
-        }
-
         disposables.add(
             taskObservable.subscribe(
                 {// onNext

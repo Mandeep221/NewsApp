@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ fun RxView(value: String, viewModel: RxDemoViewModel) {
     val postsCount by viewModel.postCommentCount.collectAsStateWithLifecycle()
     val postLiveData by viewModel.postLiveData.observeAsState()
     val fruit by viewModel.stateFlowFruits.collectAsStateWithLifecycle("Initial")
+    val flow by viewModel.sharedFlow.collectAsStateWithLifecycle(false)
 
     val context = LocalContext.current
 
@@ -52,6 +54,10 @@ fun RxView(value: String, viewModel: RxDemoViewModel) {
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        LaunchedEffect(key1 = flow) {
+            Log.d("Drakey", "Launched Effect $flow")
+        }
 
         Text(text = fruit)
 
