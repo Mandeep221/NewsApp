@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,11 +42,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.msarangal.newsapp.BuildConfig
 import com.msarangal.newsapp.R
 import com.msarangal.newsapp.data.remote.model.NetworkArticle
 import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.spacing
 import java.time.ZonedDateTime
 import java.util.Locale
 
@@ -80,7 +82,7 @@ fun NewsContent(response: NewsResponse) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
         NewsOfTheDay(
             title = newsOfTheDayArticle.title ?: "",
@@ -89,16 +91,16 @@ fun NewsContent(response: NewsResponse) {
             colorFilter = colorFilter
         )
         Text(
-            modifier = Modifier.padding(start = 16.dp, top = 20.dp),
+            modifier = Modifier.padding(start = MaterialTheme.spacing.medium, top = MaterialTheme.spacing.medium),
             text = "Breaking News",
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
         BreakingNewsItems(
             response.articles.filterIndexed { index, _ -> index > 0 }.filter { isArticleClean(it) },
             modifier = Modifier
                 .weight(0.55f)
-                .padding(vertical = 8.dp),
+                .padding(vertical = MaterialTheme.spacing.small),
             colorFilter = colorFilter
         )
     }
@@ -115,7 +117,7 @@ fun NewsOfTheDay(
         modifier = modifier
             .background(
                 color = Color.Transparent
-            ).padding(horizontal = 16.dp),
+            ).padding(horizontal = MaterialTheme.spacing.medium),
         contentAlignment = Alignment.BottomStart
     ) {
         AsyncImage(
@@ -136,7 +138,7 @@ fun NewsOfTheDay(
                     )
                 )
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(MaterialTheme.spacing.medium),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.weight(1f))
@@ -157,7 +159,7 @@ fun NewsOfTheDay(
             Text(
                 text = title,
                 color = Color.White,
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
             )
             Spacer(modifier = Modifier.size(4.dp))
@@ -185,8 +187,8 @@ fun BreakingNewsItems(networkArticles: List<NetworkArticle>, modifier: Modifier,
     LazyRow(
         modifier = modifier
             .fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
     ) {
         networkArticles.forEach {
             item {
@@ -220,7 +222,7 @@ fun BreakingNewsItem(
 ) {
     Column(
         modifier = Modifier.width(200.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmallSpacing)
     ) {
         AsyncImage(
             model = getImageModel(imgUrl, LocalContext.current),
@@ -228,7 +230,7 @@ fun BreakingNewsItem(
             contentScale = ContentScale.Crop,
             colorFilter = colorFilter,
             modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(MaterialTheme.spacing.medium))
                 .fillMaxWidth()
                 .height(200.dp)
         )
@@ -243,13 +245,13 @@ fun BreakingNewsItem(
         Spacer(modifier = Modifier.size(2.dp))
         Text(
             text = time,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.labelMedium,
             color = Color.Black.copy(alpha = 0.55f)
         )
 
         Text(
             text = author,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.labelMedium,
             color = Color.Black.copy(alpha = 0.5f)
         )
     }
