@@ -12,6 +12,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.msarangal.newsapp.navigation.News
+import com.msarangal.newsapp.navigation.NewsHome
+import com.msarangal.newsapp.navigation.NewsProfile
+import com.msarangal.newsapp.navigation.NewsSearch
+import com.msarangal.newsapp.navigation.Onboarding
+import com.msarangal.newsapp.navigation.Settings
 import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.ui.composables.search.SearchScreen
 import com.msarangal.newsapp.ui.theme.NewsAppTheme
@@ -42,23 +48,23 @@ fun NewsApp(
             NavHost(
                 modifier = modifier,
                 navController = navController,
-                startDestination = GlobalDestinations.NEWS_ROUTE
+                startDestination = News.route
             ) {
                 composable(
-                    route = GlobalDestinations.ONBOARDING_ROUTE
+                    route = Onboarding.route
                 ) {
                     OnBoardingScreen()
                 }
 
                 composable(
-                    route = GlobalDestinations.SETTINGS_ROUTE
+                    route = Settings.route
                 ) {
                     SettingsScreen()
                 }
 
                 navigation(
-                    route = GlobalDestinations.NEWS_ROUTE,
-                    startDestination = NewsDestinations.HOME_ROUTE
+                    route = News.route,
+                    startDestination = NewsHome.route
                 ) {
                     news(
                         newsViewModel = viewModel,
@@ -77,7 +83,7 @@ fun NavGraphBuilder.news(
     modifier: Modifier
 ) {
     composable(
-        route = NewsTabs.HOME.route
+        route = NewsHome.route
     ) {
         HomeScreen(
             viewModel = newsViewModel,
@@ -85,11 +91,11 @@ fun NavGraphBuilder.news(
         )
     }
 
-    composable(route = NewsTabs.SEARCH.route) {
+    composable(route = NewsSearch.route) {
         SearchScreen(newsViewModel)
     }
 
-    composable(route = NewsTabs.PROFILE.route) {
+    composable(route = NewsProfile.route) {
         ProfileScreen()
     }
 }
