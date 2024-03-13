@@ -21,7 +21,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
+fun BottomNavView(
+    tabs: List<NewsTabs>,
+    navController: NavController,
+    onClickNavItem: (String, String) -> Unit
+) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: NewsTabs.HOME.route
@@ -49,15 +53,7 @@ fun BottomNavView(tabs: List<NewsTabs>, navController: NavController) {
                 BottomNavigationItem(
                     selected = currentRoute == tab.route,
                     onClick = {
-                        if (tab.route != currentRoute) {
-                            navController.navigate(tab.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
+                        onClickNavItem(tab.route, currentRoute)
                     },
                     label = { Text(stringResource(id = tab.title)) },
                     icon = { Icon(imageVector = tab.icon, contentDescription = null) },

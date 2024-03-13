@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msarangal.newsapp.data.NewsRepository
 import com.msarangal.newsapp.data.remote.model.NewsResponse
+import com.msarangal.newsapp.navigation.NewsSearch
 import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_ENTERTAINMENT
 import com.msarangal.newsapp.util.Constants.CATEGORY_SPORTS
@@ -31,7 +32,8 @@ class NewsViewModel @Inject constructor(
         CATEGORY_ENTERTAINMENT to 3
     )
 
-    val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
+    val searchQuery =
+        savedStateHandle.getStateFlow(key = NewsSearch.SEARCH_QUERY_ARG, initialValue = "")
 
     var initialCategoryIndex = categoryMap.values.first()
 

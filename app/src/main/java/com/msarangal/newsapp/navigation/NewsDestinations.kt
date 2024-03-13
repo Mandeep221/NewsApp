@@ -1,5 +1,6 @@
 package com.msarangal.newsapp.navigation
 
+import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
@@ -7,6 +8,9 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.msarangal.newsapp.R
 
 /**
@@ -16,6 +20,7 @@ import com.msarangal.newsapp.R
  */
 interface NewsDestinations {
     val route: String
+
     @get:StringRes
     val title: Int
         get() = R.string.app_name
@@ -48,7 +53,23 @@ object NewsSearch : NewsDestinations {
         get() = R.string.tab_search
     override val icon: ImageVector = Icons.Default.Search
 
-    override val route: String = "news/search"
+    override val route: String = "newssearch"
+    const val SEARCH_QUERY_ARG = "search_query"
+    val routeWithArgs = "$route/{$SEARCH_QUERY_ARG}"
+
+    val arguments = listOf(
+        navArgument(SEARCH_QUERY_ARG) {
+            type = NavType.StringType
+            defaultValue = ""
+        }
+    )
+
+    val deepLinks = listOf(
+        navDeepLink {
+            uriPattern = "https://$route/{$SEARCH_QUERY_ARG}"
+            action = Intent.ACTION_VIEW
+        }
+    )
 }
 
 object NewsProfile : NewsDestinations {

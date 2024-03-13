@@ -17,6 +17,6 @@ enum class NewsTabs(
     val route: String
 ) {
     HOME(R.string.tab_breaking_news, Icons.Default.Whatshot, NewsHome.route),
-    SEARCH(R.string.tab_search, Icons.Default.Search, NewsSearch.route),
+    SEARCH(R.string.tab_search, Icons.Default.Search, NewsSearch.routeWithArgs),
     PROFILE(R.string.tab_profile, Icons.Default.AccountCircle, NewsProfile.route)
 }

@@ -22,12 +22,6 @@ import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.ui.composables.search.SearchScreen
 import com.msarangal.newsapp.ui.theme.NewsAppTheme
 
-object GlobalDestinations {
-    const val ONBOARDING_ROUTE = "onboarding"
-    const val SETTINGS_ROUTE = "settings"
-    const val NEWS_ROUTE = "news"
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsApp(
@@ -39,7 +33,14 @@ fun NewsApp(
         val tabs = NewsTabs.values().toList()
         Scaffold(
             topBar = { TopBarView() },
-            bottomBar = { BottomNavView(tabs = tabs, navController = navController) }
+            bottomBar = {
+                BottomNavView(
+                    tabs = tabs,
+                    navController = navController
+                ) { selectedTabRoute, currentTabRoute ->
+                    handleOnClickBottomNavItem(selectedTabRoute, currentTabRoute, navController)
+                }
+            }
         ) {
             val modifier = Modifier
                 .fillMaxSize()
@@ -77,6 +78,22 @@ fun NewsApp(
     }
 }
 
+private fun handleOnClickBottomNavItem(
+    selectedTabRoute: String,
+    currentTabRoute: String,
+    navController: NavController
+) {
+    if (selectedTabRoute != currentTabRoute) {
+        navController.navigate(selectedTabRoute) {
+            popUpTo(navController.graph.startDestinationId) {
+                saveState = true
+            }
+            launchSingleTop = false
+            restoreState = true
+        }
+    }
+}
+
 fun NavGraphBuilder.news(
     newsViewModel: NewsViewModel,
     navController: NavController,
@@ -91,7 +108,11 @@ fun NavGraphBuilder.news(
         )
     }
 
-    composable(route = NewsSearch.route) {
+    composable(
+        route = NewsSearch.routeWithArgs,
+        arguments = NewsSearch.arguments,
+        deepLinks = NewsSearch.deepLinks
+    ) {
         SearchScreen(newsViewModel)
     }
 
