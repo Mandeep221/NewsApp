@@ -151,7 +151,7 @@ fun NewsOfTheDay(
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 text = "News of the day",
                 style = TextStyle(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -236,6 +236,7 @@ fun BreakingNewsItem(
         )
         Text(
             text = title,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = TextUnit(14f, TextUnitType.Sp)
@@ -246,13 +247,13 @@ fun BreakingNewsItem(
         Text(
             text = time,
             style = MaterialTheme.typography.labelMedium,
-            color = Color.Black.copy(alpha = 0.55f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Text(
             text = author,
             style = MaterialTheme.typography.labelMedium,
-            color = Color.Black.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

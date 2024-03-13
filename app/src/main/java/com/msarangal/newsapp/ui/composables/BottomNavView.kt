@@ -1,12 +1,13 @@
 package com.msarangal.newsapp.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ fun BottomNavView(
     if (currentRoute in routes) {
         BottomNavigation(
             modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.secondaryContainer)
                 .fillMaxWidth()
                 .drawBehind {
                     val borderSize = 1.dp.toPx()
@@ -55,10 +57,10 @@ fun BottomNavView(
                     onClick = {
                         onClickNavItem(tab.route, currentRoute)
                     },
-                    label = { Text(stringResource(id = tab.title)) },
+                    label = { Text(stringResource(id = tab.title), color = MaterialTheme.colorScheme.onSecondaryContainer) },
                     icon = { Icon(imageVector = tab.icon, contentDescription = null) },
                     alwaysShowLabel = false,
-                    selectedContentColor = MaterialTheme.colors.primary,
+                    selectedContentColor = MaterialTheme.colorScheme.secondary,
                     unselectedContentColor = LocalContentColor.current
                 )
             }
