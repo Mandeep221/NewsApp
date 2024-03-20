@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.msarangal.newsapp"
-        minSdk = 24
+        minSdk = 22
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

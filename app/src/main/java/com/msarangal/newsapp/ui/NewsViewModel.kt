@@ -3,26 +3,34 @@ package com.msarangal.newsapp.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.msarangal.newsapp.BuildConfig
 import com.msarangal.newsapp.data.NewsRepository
+import com.msarangal.newsapp.data.remote.NetworkHelper
+import com.msarangal.newsapp.data.remote.NetworkManager
+import com.msarangal.newsapp.data.remote.NewsApi
 import com.msarangal.newsapp.data.remote.model.NewsResponse
 import com.msarangal.newsapp.navigation.NewsSearch
 import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_ENTERTAINMENT
 import com.msarangal.newsapp.util.Constants.CATEGORY_SPORTS
 import com.msarangal.newsapp.util.Constants.CATEGORY_TECHNOLOGY
-import com.msarangal.newsapp.util.Constants.SEARCH_QUERY
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
+    private val networkManager: NetworkManager,
+    private val networkHelper: NetworkHelper,
     private val newsRepository: NewsRepository,
+    private val newsApi: NewsApi,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val categoryMap = mapOf(
@@ -60,6 +68,9 @@ class NewsViewModel @Inject constructor(
     private val stateLock = Mutex() // For synchronization
 
     init {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val result = newsApi.getBreakingNewsOnMain(BuildConfig.API_KEY)
+//        }
         fetchBreakingNews()
         fetchHealthNews()
         fetchSportsNews()
@@ -69,17 +80,25 @@ class NewsViewModel @Inject constructor(
 
     private fun fetchBreakingNews() {
         viewModelScope.launch {
-            _breakingNewsStateFlow.value = BreakingNewsUiState.Loading
-            newsRepository.getBreakingNews()
-                .catch {
-                    _breakingNewsStateFlow.value =
-                        BreakingNewsUiState.Failure(
-                            error = it.localizedMessage ?: "Exception occurred"
-                        )
-                }
-                .collectLatest {
-                    _breakingNewsStateFlow.value = BreakingNewsUiState.Success(data = it)
-                }
+            if (networkHelper.isConnected()) {
+                _breakingNewsStateFlow.value = BreakingNewsUiState.Loading
+                newsRepository.getBreakingNews()
+                    .flowOn(Dispatchers.Main)
+                    .catch {
+                        _breakingNewsStateFlow.value =
+                            BreakingNewsUiState.Failure(
+                                error = it.localizedMessage ?: "Exception occurred"
+                            )
+                    }
+                    .collectLatest {
+                        _breakingNewsStateFlow.value =
+                            BreakingNewsUiState.Success(data = it)
+                    }
+            } else {
+                _breakingNewsStateFlow.value = BreakingNewsUiState.Failure(
+                    error = "No internet connection"
+                )
+            }
         }
     }
 
