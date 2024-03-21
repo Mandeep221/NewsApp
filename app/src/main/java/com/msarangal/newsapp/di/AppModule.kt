@@ -3,15 +3,20 @@ package com.msarangal.newsapp.di
 import android.content.Context
 import android.net.ConnectivityManager
 import androidx.room.Room
-import com.msarangal.newsapp.data.NewsRepository
+import com.cheezycode.notesample.api.NoteAPI
+import com.cheezycode.notesample.api.UserAPI
+import com.msarangal.newsapp.domain.NewsRepository
 import com.msarangal.newsapp.data.NewsRepositoryImpl
+import com.msarangal.newsapp.data.PracticeRepositoryImpl
 import com.msarangal.newsapp.data.local.NewsDatabase
 import com.msarangal.newsapp.data.remote.NetworkHelper
 import com.msarangal.newsapp.data.remote.NetworkHelperImpl
 import com.msarangal.newsapp.data.remote.NetworkManager
 import com.msarangal.newsapp.data.remote.NewsApi
+import com.msarangal.newsapp.domain.PracticeRepository
 import com.msarangal.newsapp.util.Constants.BASE_URL
 import com.msarangal.newsapp.util.Constants.NEWS_DB
+import com.msarangal.newsapp.util.Constants.NOTES_BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,13 +26,15 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    @Singleton
+    @Provides
     fun providesRoomDb(@ApplicationContext context: Context): NewsDatabase = Room.databaseBuilder(
         context = context, klass = NewsDatabase::class.java, name = NEWS_DB
     ).build()
@@ -44,6 +51,7 @@ object AppModule {
 
     @Singleton
     @Provides
+    @Named("Default")
     fun providesRetrofitInstance(client: OkHttpClient): Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(client)
@@ -52,12 +60,47 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesNewsApi(retrofit: Retrofit): NewsApi = retrofit.create(NewsApi::class.java)
+    @Named("Alternate")
+    fun providesRetrofitInstanceForNotes(client: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl(NOTES_BASE_URL)
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
     @Singleton
     @Provides
-    fun providesNewsRepository(newsApi: NewsApi): NewsRepository =
-        NewsRepositoryImpl(newsApi = newsApi)
+    fun providesNewsApi(@Named("Default") retrofit: Retrofit): NewsApi =
+        retrofit.create(NewsApi::class.java)
+
+    @Singleton
+    @Provides
+    fun providesNotesApi(@Named("Alternate") retrofit: Retrofit): NoteAPI =
+        retrofit.create(NoteAPI::class.java)
+
+    @Singleton
+    @Provides
+    fun providesUsersApi(@Named("Alternate") retrofit: Retrofit): UserAPI =
+        retrofit.create(UserAPI::class.java)
+
+    @Singleton
+    @Provides
+    fun providesNewsRepository(newsApi: NewsApi, networkHelper: NetworkHelper): NewsRepository =
+        NewsRepositoryImpl(newsApi = newsApi, networkHelper = networkHelper)
+
+    @Singleton
+    @Provides
+    fun providesPracticeRepository(
+        userAPI: UserAPI,
+        noteAPI: NoteAPI,
+        newsDb: NewsDatabase,
+        newsApi: NewsApi
+    ): PracticeRepository =
+        PracticeRepositoryImpl(
+            noteAPI = noteAPI,
+            userAPI = userAPI,
+            newsDatabase = newsDb,
+            newsApi = newsApi
+        )
 
     @Singleton
     @Provides

@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,11 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.msarangal.newsapp.BuildConfig
 import com.msarangal.newsapp.R
+import com.msarangal.newsapp.data.remote.NetworkResult
 import com.msarangal.newsapp.data.remote.model.NetworkArticle
 import com.msarangal.newsapp.data.remote.model.NewsResponse
-import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
 import com.msarangal.newsapp.ui.spacing
 import java.time.ZonedDateTime
@@ -55,18 +55,26 @@ import java.util.Locale
 @Composable
 fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.breakingNewsStateFlow.collectAsState()
+    val liveData by viewModel.breakingNewsLiveData.observeAsState()
 
-    when (state) {
-        is BreakingNewsUiState.Failure -> {
-            ErrorState(value = (state as BreakingNewsUiState.Failure).error)
+    when (liveData) {
+        is NetworkResult.Error -> {
+            (liveData as NetworkResult.Error<NewsResponse>).errorMsg?.let {
+                ErrorState(value = it)
+            }
         }
 
-        BreakingNewsUiState.Loading -> {
-            ErrorState(value = "Loading")
+        is NetworkResult.Loading -> {
+            ErrorState(value = "Loading..")
         }
 
-        is BreakingNewsUiState.Success -> {
-            NewsContent(response = (state as BreakingNewsUiState.Success).data)
+        is NetworkResult.Success -> {
+            (liveData as NetworkResult.Success<NewsResponse>).data?.let { newsResponse ->
+                NewsContent(response = newsResponse)
+            }
+        }
+        null -> {
+
         }
     }
 }
@@ -91,7 +99,10 @@ fun NewsContent(response: NewsResponse) {
             colorFilter = colorFilter
         )
         Text(
-            modifier = Modifier.padding(start = MaterialTheme.spacing.medium, top = MaterialTheme.spacing.medium),
+            modifier = Modifier.padding(
+                start = MaterialTheme.spacing.medium,
+                top = MaterialTheme.spacing.medium
+            ),
             text = "Breaking News",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
@@ -117,7 +128,8 @@ fun NewsOfTheDay(
         modifier = modifier
             .background(
                 color = Color.Transparent
-            ).padding(horizontal = MaterialTheme.spacing.medium),
+            )
+            .padding(horizontal = MaterialTheme.spacing.medium),
         contentAlignment = Alignment.BottomStart
     ) {
         AsyncImage(
@@ -183,7 +195,11 @@ fun NewsOfTheDay(
 }
 
 @Composable
-fun BreakingNewsItems(networkArticles: List<NetworkArticle>, modifier: Modifier, colorFilter: ColorFilter) {
+fun BreakingNewsItems(
+    networkArticles: List<NetworkArticle>,
+    modifier: Modifier,
+    colorFilter: ColorFilter
+) {
     LazyRow(
         modifier = modifier
             .fillMaxWidth(),
@@ -289,5 +305,8 @@ fun getImageModel(imgUrl: String?, context: Context): Any {
 }
 
 fun isArticleClean(networkArticle: NetworkArticle) =
-    networkArticle.title.isNullOrEmpty().not() && networkArticle.title?.contains("Removed", ignoreCase = true)
+    networkArticle.title.isNullOrEmpty().not() && networkArticle.title?.contains(
+        "Removed",
+        ignoreCase = true
+    )
         ?.not() ?: false

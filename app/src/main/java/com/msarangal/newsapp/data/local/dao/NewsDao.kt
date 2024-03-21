@@ -1,5 +1,6 @@
 package com.msarangal.newsapp.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -13,7 +14,7 @@ interface NewsDao {
     fun insert(articleEntities: List<ArticleEntity>)
 
     @Query("Select * from article_table where category = :category")
-    fun getNews(category: String): List<ArticleEntity>
+    fun getNews(category: String): LiveData<List<ArticleEntity>>
 
     @Query("Delete from article_table")
     fun deleteAllNews()
