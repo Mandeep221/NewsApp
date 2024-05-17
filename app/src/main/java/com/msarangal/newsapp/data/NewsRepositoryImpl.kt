@@ -30,31 +30,8 @@ class NewsRepositoryImpl @Inject constructor(
         get() = _breakingNewsLiveData
 
 
-    override fun getBreakingNews(): Flow<NetworkResult<NewsResponse>> = flow {
-        //emit(NetworkResponse.Loading())
-        if (networkHelper.isConnected()) {
-            _breakingNewsLiveData.postValue(NetworkResult.Loading())
-            _stateFlowBreakingNews.emit(NetworkResult.Loading())
-            try {
-                val result = newsApi.getBreakingNews(BuildConfig.API_KEY)
-                if (result.isSuccessful && result.body() != null) {
-                    //emit(NetworkResponse.Success(response = result.body()))
-                    _stateFlowBreakingNews.emit(NetworkResult.Success(response = result.body()))
-                    _breakingNewsLiveData.postValue(NetworkResult.Success(response = result.body()))
-                } else {
-                    emit(NetworkResult.Error(msg = result.message()))
-                    _stateFlowBreakingNews.emit(NetworkResult.Error(msg = result.message()))
-                    _breakingNewsLiveData.postValue((NetworkResult.Error(msg = result.message())))
-                }
-            } catch (e: Exception) {
-                _stateFlowBreakingNews.emit(NetworkResult.Error(e.toString()))
-                _breakingNewsLiveData.postValue((NetworkResult.Error(msg = e.toString())))
-            }
-        } else {
-            _stateFlowBreakingNews.emit(NetworkResult.Error("No Internet"))
-            _breakingNewsLiveData.postValue((NetworkResult.Error("No Internet")))
-        }
-    }
+    override suspend fun getBreakingNews(): Response<NewsResponse> =
+        newsApi.getBreakingNews(BuildConfig.API_KEY)
 
     override suspend fun getBreakingNewsWithLiveData() {
         if (networkHelper.isConnected()) {
@@ -78,11 +55,9 @@ class NewsRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getBreakingNewsForCategory(category: String): Flow<Response<NewsResponse>> {
-        return flow {
-            val queryMap = mapOf("category" to category, "apiKey" to BuildConfig.API_KEY)
-            emit(newsApi.getBreakingNewsForCategory(queryMap))
-        }
+    override suspend fun getBreakingNewsForCategory(category: String): Response<NewsResponse> {
+        val queryMap = mapOf("category" to category, "apiKey" to BuildConfig.API_KEY)
+        return newsApi.getBreakingNewsForCategory(queryMap)
     }
 
 }

@@ -13,12 +13,12 @@ import com.msarangal.newsapp.ui.composables.getColorFilter
 import com.msarangal.newsapp.ui.composables.isArticleClean
 
 @Composable
-fun HealthView(viewModel: NewsViewModel) {
-    val state by viewModel.healthNewsStateFlow.collectAsState()
+fun HealthView(healthNewsUiState: HealthNewsUiState) {
+    // val state by viewModel.healthNewsStateFlow.collectAsState()
 
-    when (state) {
+    when (healthNewsUiState) {
         is HealthNewsUiState.Failure -> {
-            ErrorState(value = (state as HealthNewsUiState.Failure).error)
+            ErrorState(value = healthNewsUiState.error)
         }
 
         HealthNewsUiState.Loading -> {
@@ -27,7 +27,7 @@ fun HealthView(viewModel: NewsViewModel) {
 
         is HealthNewsUiState.Success -> {
             CategoryNewsItems(
-                networkArticles = (state as HealthNewsUiState.Success).data.articles.filter {
+                networkArticles = healthNewsUiState.data.articles.filter {
                     isArticleClean(
                         it
                     )
@@ -35,6 +35,9 @@ fun HealthView(viewModel: NewsViewModel) {
                 modifier = Modifier.fillMaxSize(),
                 colorFilter = ColorFilter.colorMatrix(getColorFilter())
             )
+        }
+
+        HealthNewsUiState.UnInitialized -> {
         }
     }
 }

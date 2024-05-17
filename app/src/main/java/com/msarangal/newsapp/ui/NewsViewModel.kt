@@ -1,31 +1,23 @@
 package com.msarangal.newsapp.ui
 
-import android.text.TextUtils
-import android.util.Patterns
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.msarangal.newsapp.domain.NewsRepository
 import com.msarangal.newsapp.data.remote.NetworkHelper
 import com.msarangal.newsapp.data.remote.NetworkManager
 import com.msarangal.newsapp.data.remote.NewsApi
-import com.msarangal.newsapp.data.remote.NetworkResult
 import com.msarangal.newsapp.data.remote.model.NewsResponse
+import com.msarangal.newsapp.domain.NewsRepository
 import com.msarangal.newsapp.navigation.NewsSearch
-import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_ENTERTAINMENT
+import com.msarangal.newsapp.util.Constants.CATEGORY_HEALTH
 import com.msarangal.newsapp.util.Constants.CATEGORY_SPORTS
 import com.msarangal.newsapp.util.Constants.CATEGORY_TECHNOLOGY
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,188 +40,156 @@ class NewsViewModel @Inject constructor(
 
     var initialCategoryIndex = categoryMap.values.first()
 
-    private val _breakingNewsStateFlow =
-        MutableStateFlow<BreakingNewsUiState>(BreakingNewsUiState.Loading)
+    val breakingNewsStateFlow = flow {
+        if (networkHelper.isConnected()) {
+            emit(BreakingNewsUiState.Loading)
+            val result = newsRepository.getBreakingNews()
+            if (result.isSuccessful) {
+                result.body()?.let { newsResponse ->
+                    emit(BreakingNewsUiState.Success(data = newsResponse))
+                }
+            } else {
+                emit(BreakingNewsUiState.Failure(error = "Something went wrong"))
+            }
+        } else {
+            emit(BreakingNewsUiState.Failure(error = "No Internet"))
+        }
 
-    //val breakingNewsStateFlow = _breakingNewsStateFlow.asStateFlow()
-    val breakingNewsStateFlow = newsRepository.stateFlowBreakingNews
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        BreakingNewsUiState.UnInitialized
+    )
 
-    val breakingNewsLiveData get() = newsRepository.breakingNewsLiveData
+    val healthNewsStateFlow = flow {
+        if (networkHelper.isConnected()) {
+            emit(HealthNewsUiState.Loading)
+            val result = newsRepository.getBreakingNewsForCategory(CATEGORY_HEALTH)
+            if (result.isSuccessful) {
+                result.body()?.let { newsResponse ->
+                    emit(HealthNewsUiState.Success(data = newsResponse))
+                }
+            } else {
+                emit(HealthNewsUiState.Failure(error = "Something went wrong"))
+            }
+        } else {
+            emit(HealthNewsUiState.Failure(error = "No Internet"))
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        HealthNewsUiState.UnInitialized
+    )
 
-    private val _healthNewsStateFlow =
-        MutableStateFlow<HealthNewsUiState>(HealthNewsUiState.Loading)
-    val healthNewsStateFlow = _healthNewsStateFlow.asStateFlow()
+    val sportsNewsStateFlow = flow {
+        if (networkHelper.isConnected()) {
+            emit(SportsNewsUiState.Loading)
+            val result = newsRepository.getBreakingNewsForCategory(CATEGORY_SPORTS)
+            if (result.isSuccessful) {
+                result.body()?.let { newsResponse ->
+                    emit(SportsNewsUiState.Success(data = newsResponse))
+                }
+            } else {
+                emit(SportsNewsUiState.Failure(error = "Something went wrong"))
+            }
+        } else {
+            emit(SportsNewsUiState.Failure(error = "No Internet"))
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        SportsNewsUiState.UnInitialized
+    )
 
-    private val _sportsNewsStateFlow =
-        MutableStateFlow<SportsNewsUiState>(SportsNewsUiState.Loading)
-    val sportsNewsStateFlow = _sportsNewsStateFlow.asStateFlow()
+    val techNewsStateFlow = flow {
+        if (networkHelper.isConnected()) {
+            emit(TechNewsUiState.Loading)
+            val result = newsRepository.getBreakingNewsForCategory(CATEGORY_TECHNOLOGY)
+            if (result.isSuccessful) {
+                result.body()?.let { newsResponse ->
+                    emit(TechNewsUiState.Success(data = newsResponse))
+                }
+            } else {
+                emit(TechNewsUiState.Failure(error = "Something went wrong"))
+            }
+        } else {
+            emit(TechNewsUiState.Failure(error = "No Internet"))
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        TechNewsUiState.UnInitialized
+    )
 
-    private val _techNewsStateFlow =
-        MutableStateFlow<TechNewsUiState>(TechNewsUiState.Loading)
-    val techNewsStateFlow = _techNewsStateFlow.asStateFlow()
-
-    private val _entertainmentNewsStateFlow =
-        MutableStateFlow<EntertainmentNewsUiState>(EntertainmentNewsUiState.Loading)
-    val entertainmentNewsStateFlow = _entertainmentNewsStateFlow.asStateFlow()
-
-    private val stateLock = Mutex() // For synchronization
+    val entertainmentNewsStateFlow = flow {
+        if (networkHelper.isConnected()) {
+            emit(EntertainmentNewsUiState.Loading)
+            val result = newsRepository.getBreakingNewsForCategory(CATEGORY_ENTERTAINMENT)
+            if (result.isSuccessful) {
+                result.body()?.let { newsResponse ->
+                    emit(EntertainmentNewsUiState.Success(data = newsResponse))
+                }
+            } else {
+                emit(EntertainmentNewsUiState.Failure(error = "Something went wrong"))
+            }
+        } else {
+            emit(EntertainmentNewsUiState.Failure(error = "No Internet"))
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        EntertainmentNewsUiState.UnInitialized
+    )
 
     init {
+        // Should always keep init light weight.
+        // TODO: Remove initialization of calls from here
+        /**
+         * 1.Difficult to test viewmodel in isolation: Because the moment ViewModel is created
+         * a network call is fired. This complicates ViewModel testing.
+         * 2. A Configuration change may lead to re-fetching of data or unexpected behaviour
+         * 3.
+         */
 //        viewModelScope.launch(Dispatchers.IO) {
 //            val result = newsApi.getBreakingNewsOnMain(BuildConfig.API_KEY)
 //        }
-        // fetchBreakingNews()
-        fetchBreakingNewsUsingLiveData()
-        fetchHealthNews()
-        fetchSportsNews()
-        fetchTechNews()
-        fetchPoliticsNews()
+        //fetchBreakingNews()
+        //fetchBreakingNewsUsingLiveData()
+        //fetchHealthNews()
+//        fetchSportsNews()
+//        fetchTechNews()
+//        fetchPoliticsNews()
     }
 
-    private fun fetchBreakingNews() {
-        viewModelScope.launch {
-            newsRepository.getBreakingNews()
-                .flowOn(Dispatchers.IO)
-                .catch {
-                    _breakingNewsStateFlow.value =
-                        BreakingNewsUiState.Failure(
-                            error = it.localizedMessage ?: "Exception occurred"
-                        )
-                }
-                .collectLatest {
-                    when (it) {
-                        is NetworkResult.Loading -> {
-                            _breakingNewsStateFlow.value = BreakingNewsUiState.Loading
-                        }
-
-                        is NetworkResult.Error -> {
-                            _breakingNewsStateFlow.value = BreakingNewsUiState.Failure(
-                                error = it.errorMsg ?: "Something went wrong"
-                            )
-                        }
-
-                        is NetworkResult.Success -> {
-                            it.data?.let { newsResponse ->
-                                _breakingNewsStateFlow.value =
-                                    BreakingNewsUiState.Success(data = newsResponse)
-                            }
-                        }
-                    }
-                }
-        }
-    }
+//    private fun fetchBreakingNews() {
+//        viewModelScope.launch {
+//            if (networkHelper.isConnected()) {
+//                _breakingNewsStateFlow.value = BreakingNewsUiState.Loading
+//                newsRepository.getBreakingNews()
+//                    .flowOn(Dispatchers.IO)
+//                    .catch {
+//                        _breakingNewsStateFlow.value = BreakingNewsUiState.Failure(
+//                            error = it.localizedMessage ?: "Exception occurred"
+//                        )
+//                    }
+//                    .collectLatest {
+//                        it.body()?.let { newsResponse ->
+//                            _breakingNewsStateFlow.value =
+//                                BreakingNewsUiState.Success(data = newsResponse)
+//                        }
+//                    }
+//            } else {
+//                _breakingNewsStateFlow.value =
+//                    BreakingNewsUiState.Failure(
+//                        error = "No Internet"
+//                    )
+//            }
+//        }
+//    }
 
     private fun fetchBreakingNewsUsingLiveData() {
         viewModelScope.launch {
             newsRepository.getBreakingNewsWithLiveData()
-        }
-    }
-
-    private fun fetchHealthNews() {
-        viewModelScope.launch {
-            if (networkHelper.isConnected()) {
-                _healthNewsStateFlow.value = HealthNewsUiState.Loading
-                newsRepository.getBreakingNewsForCategory(category = CATEGORY_HEALTH)
-                    .flowOn(Dispatchers.IO)
-                    .catch {
-                        _healthNewsStateFlow.value =
-                            HealthNewsUiState.Failure(
-                                error = it.localizedMessage ?: "Exception occurred"
-                            )
-                    }
-                    .collectLatest {
-                        it.body()?.let { newsResponse ->
-                            _healthNewsStateFlow.value =
-                                HealthNewsUiState.Success(data = newsResponse)
-                        }
-                    }
-            } else {
-                _healthNewsStateFlow.value =
-                    HealthNewsUiState.Failure(
-                        error = "No Internet"
-                    )
-            }
-        }
-    }
-
-    private fun fetchSportsNews() {
-        viewModelScope.launch {
-            if (networkHelper.isConnected()) {
-                _sportsNewsStateFlow.value = SportsNewsUiState.Loading
-                newsRepository.getBreakingNewsForCategory(category = CATEGORY_SPORTS)
-                    .flowOn(Dispatchers.IO)
-                    .catch {
-                        _sportsNewsStateFlow.value =
-                            SportsNewsUiState.Failure(
-                                error = it.localizedMessage ?: "Exception occurred"
-                            )
-                    }
-                    .collectLatest {
-                        it.body()?.let { newsResponse ->
-                            _sportsNewsStateFlow.value =
-                                SportsNewsUiState.Success(data = newsResponse)
-                        }
-                    }
-            } else {
-                _sportsNewsStateFlow.value =
-                    SportsNewsUiState.Failure(
-                        error = "No Internet"
-                    )
-            }
-        }
-    }
-
-    private fun fetchTechNews() {
-        viewModelScope.launch {
-            if (networkHelper.isConnected()) {
-                _techNewsStateFlow.value = TechNewsUiState.Loading
-                newsRepository.getBreakingNewsForCategory(category = CATEGORY_TECHNOLOGY)
-                    .flowOn(Dispatchers.IO)
-                    .catch {
-                        _techNewsStateFlow.value =
-                            TechNewsUiState.Failure(
-                                error = it.localizedMessage ?: "Exception occurred"
-                            )
-                    }
-                    .collectLatest {
-                        it.body()?.let { newsResponse ->
-                            _techNewsStateFlow.value =
-                                TechNewsUiState.Success(data = newsResponse)
-                        }
-                    }
-            } else {
-                _techNewsStateFlow.value =
-                    TechNewsUiState.Failure(
-                        error = "No Internet"
-                    )
-            }
-        }
-    }
-
-    private fun fetchPoliticsNews() {
-        viewModelScope.launch {
-            if (networkHelper.isConnected()) {
-                _entertainmentNewsStateFlow.value = EntertainmentNewsUiState.Loading
-                newsRepository.getBreakingNewsForCategory(category = CATEGORY_ENTERTAINMENT)
-                    .flowOn(Dispatchers.IO)
-                    .catch {
-                        _entertainmentNewsStateFlow.value =
-                            EntertainmentNewsUiState.Failure(
-                                error = it.localizedMessage ?: "Exception occurred"
-                            )
-                    }
-                    .collectLatest {
-                        it.body()?.let { newsResponse ->
-                            _entertainmentNewsStateFlow.value =
-                                EntertainmentNewsUiState.Success(data = newsResponse)
-                        }
-                    }
-            } else {
-                _entertainmentNewsStateFlow.value =
-                    EntertainmentNewsUiState.Failure(
-                        error = "No Internet"
-                    )
-            }
         }
     }
 
@@ -246,28 +206,33 @@ sealed class BreakingNewsUiState {
     data class Success(val data: NewsResponse) : BreakingNewsUiState()
     data class Failure(val error: String) : BreakingNewsUiState()
     object Loading : BreakingNewsUiState()
+    object UnInitialized : BreakingNewsUiState()
 }
 
 sealed class HealthNewsUiState {
     data class Success(val data: NewsResponse) : HealthNewsUiState()
     data class Failure(val error: String) : HealthNewsUiState()
     object Loading : HealthNewsUiState()
+    object UnInitialized : HealthNewsUiState()
 }
 
 sealed class SportsNewsUiState {
     data class Success(val data: NewsResponse) : SportsNewsUiState()
     data class Failure(val error: String) : SportsNewsUiState()
     object Loading : SportsNewsUiState()
+    object UnInitialized : SportsNewsUiState()
 }
 
 sealed class TechNewsUiState {
     data class Success(val data: NewsResponse) : TechNewsUiState()
     data class Failure(val error: String) : TechNewsUiState()
     object Loading : TechNewsUiState()
+    object UnInitialized : TechNewsUiState()
 }
 
 sealed class EntertainmentNewsUiState {
     data class Success(val data: NewsResponse) : EntertainmentNewsUiState()
     data class Failure(val error: String) : EntertainmentNewsUiState()
     object Loading : EntertainmentNewsUiState()
+    object UnInitialized : EntertainmentNewsUiState()
 }

@@ -20,14 +20,25 @@ import com.msarangal.newsapp.navigation.NewsProfile
 import com.msarangal.newsapp.navigation.NewsSearch
 import com.msarangal.newsapp.navigation.Onboarding
 import com.msarangal.newsapp.navigation.Settings
+import com.msarangal.newsapp.ui.BreakingNewsUiState
+import com.msarangal.newsapp.ui.EntertainmentNewsUiState
+import com.msarangal.newsapp.ui.HealthNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.SportsNewsUiState
+import com.msarangal.newsapp.ui.TechNewsUiState
 import com.msarangal.newsapp.ui.composables.search.SearchScreen
 import com.msarangal.newsapp.ui.theme.NewsAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsApp(
-    viewModel: NewsViewModel
+    breakingNewsUiState: BreakingNewsUiState,
+    healthNewsUiState: HealthNewsUiState,
+    sportsNewsUiState: SportsNewsUiState,
+    techNewsUiState: TechNewsUiState,
+    entertainmentNewsUiState: EntertainmentNewsUiState,
+    onSearchTriggered: (String) -> Unit,
+    onSearchQueryChanged: (String) -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -70,9 +81,15 @@ fun NewsApp(
                     startDestination = NewsHome.route
                 ) {
                     news(
-                        newsViewModel = viewModel,
+                        breakingNewsUiState = breakingNewsUiState,
+                        healthNewsUiState = healthNewsUiState,
+                        sportsNewsUiState = sportsNewsUiState,
+                        techNewsUiState = techNewsUiState,
+                        entertainmentNewsUiState = entertainmentNewsUiState,
                         navController = navController,
-                        modifier = modifier
+                        modifier = modifier,
+                        onSearchTriggered = onSearchTriggered,
+                        onSearchQueryChanged = onSearchQueryChanged
                     )
                 }
             }
@@ -97,15 +114,21 @@ private fun handleOnClickBottomNavItem(
 }
 
 fun NavGraphBuilder.news(
-    newsViewModel: NewsViewModel,
+    breakingNewsUiState: BreakingNewsUiState,
+    healthNewsUiState: HealthNewsUiState,
+    sportsNewsUiState: SportsNewsUiState,
+    techNewsUiState: TechNewsUiState,
+    entertainmentNewsUiState: EntertainmentNewsUiState,
     navController: NavController,
-    modifier: Modifier
+    modifier: Modifier,
+    onSearchTriggered: (String) -> Unit,
+    onSearchQueryChanged: (String) -> Unit
 ) {
     composable(
         route = NewsHome.route
     ) {
         HomeScreen(
-            viewModel = newsViewModel,
+            breakingNewsUiState = breakingNewsUiState,
             modifier = modifier
         )
     }
@@ -115,7 +138,14 @@ fun NavGraphBuilder.news(
         arguments = NewsSearch.arguments,
         deepLinks = NewsSearch.deepLinks
     ) {
-        SearchScreen(newsViewModel)
+        SearchScreen(
+            onSearchTriggered,
+            onSearchQueryChanged,
+            healthNewsUiState,
+            sportsNewsUiState,
+            techNewsUiState,
+            entertainmentNewsUiState
+        )
     }
 
     composable(route = NewsProfile.route) {

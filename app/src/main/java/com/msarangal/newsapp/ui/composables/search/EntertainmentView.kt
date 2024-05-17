@@ -13,12 +13,12 @@ import com.msarangal.newsapp.ui.composables.getColorFilter
 import com.msarangal.newsapp.ui.composables.isArticleClean
 
 @Composable
-fun PoliticsView(viewModel: NewsViewModel) {
-    val state by viewModel.entertainmentNewsStateFlow.collectAsState()
+fun PoliticsView(entertainmentNewsUiState: EntertainmentNewsUiState) {
+    //val state by viewModel.entertainmentNewsStateFlow.collectAsState()
 
-    when (state) {
+    when (entertainmentNewsUiState) {
         is EntertainmentNewsUiState.Failure -> {
-            ErrorState(value = (state as EntertainmentNewsUiState.Failure).error)
+            ErrorState(value = entertainmentNewsUiState.error)
         }
 
         EntertainmentNewsUiState.Loading -> {
@@ -27,7 +27,7 @@ fun PoliticsView(viewModel: NewsViewModel) {
 
         is EntertainmentNewsUiState.Success -> {
             CategoryNewsItems(
-                networkArticles = (state as EntertainmentNewsUiState.Success).data.articles.filter {
+                networkArticles = entertainmentNewsUiState.data.articles.filter {
                     isArticleClean(
                         it
                     )
@@ -36,5 +36,7 @@ fun PoliticsView(viewModel: NewsViewModel) {
                 colorFilter = ColorFilter.colorMatrix(getColorFilter())
             )
         }
+
+        EntertainmentNewsUiState.UnInitialized -> TODO()
     }
 }

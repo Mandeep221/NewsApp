@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.msarangal.newsapp.base.AnalyticsLogger
 import com.msarangal.newsapp.base.AnalyticsLoggerImpl
@@ -31,17 +33,29 @@ class NewsActivity : ComponentActivity(),
         registerLifecycleOwner(this)
         handleDeeplink(this, intent)
 
-        val obj = MyFactory().getObj<AnalyticsLoggerImpl>()
+        /** Improvement considerations:
+         * 1. Identify the root Composable
+         * 2. Implement State hoisting wherever possible
+         * 3. Don't pass viewmodels to composables. Pass state.
+         */
         setContent {
-            NewsAppTheme(
-                darkTheme = true
-            ) {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
-                ) {
-                    NewsApp(viewModel = newsViewModel)
-                }
+            NewsAppTheme {
+                val breakingNewsUiState = newsViewModel.breakingNewsStateFlow.collectAsState()
+                val healthNewsUiState = newsViewModel.healthNewsStateFlow.collectAsState()
+                val sportsNewsUiState = newsViewModel.sportsNewsStateFlow.collectAsState()
+                val techNewsUiState = newsViewModel.techNewsStateFlow.collectAsState()
+                val entertainmentNewsUiState =
+                    newsViewModel.entertainmentNewsStateFlow.collectAsState()
+
+                NewsApp(
+                    breakingNewsUiState = breakingNewsUiState.value,
+                    healthNewsUiState = healthNewsUiState.value,
+                    sportsNewsUiState = sportsNewsUiState.value,
+                    techNewsUiState = techNewsUiState.value,
+                    entertainmentNewsUiState = entertainmentNewsUiState.value,
+                    onSearchTriggered = newsViewModel::onSearchTriggered,
+                    onSearchQueryChanged = newsViewModel::onSearchQueryChanged
+                )
             }
         }
     }

@@ -10,8 +10,8 @@ import retrofit2.Response
 interface NewsRepository {
     val stateFlowBreakingNews: StateFlow<NetworkResult<NewsResponse>>
     val breakingNewsLiveData: LiveData<NetworkResult<NewsResponse>>
-    fun getBreakingNews(): Flow<NetworkResult<NewsResponse>>
-    fun getBreakingNewsForCategory(category: String): Flow<Response<NewsResponse>>
+    suspend fun getBreakingNews(): Response<NewsResponse>
+    suspend fun getBreakingNewsForCategory(category: String): Response<NewsResponse>
 
     suspend fun getBreakingNewsWithLiveData()
 }

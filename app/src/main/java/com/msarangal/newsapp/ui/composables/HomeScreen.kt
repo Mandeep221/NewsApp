@@ -22,9 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,36 +41,35 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.msarangal.newsapp.R
-import com.msarangal.newsapp.data.remote.NetworkResult
 import com.msarangal.newsapp.data.remote.model.NetworkArticle
 import com.msarangal.newsapp.data.remote.model.NewsResponse
-import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.BreakingNewsUiState
 import com.msarangal.newsapp.ui.spacing
 import java.time.ZonedDateTime
 import java.util.Locale
 
 @Composable
-fun HomeScreen(viewModel: NewsViewModel, modifier: Modifier = Modifier) {
-    val state by viewModel.breakingNewsStateFlow.collectAsState()
-    val liveData by viewModel.breakingNewsLiveData.observeAsState()
+fun HomeScreen(
+    breakingNewsUiState: BreakingNewsUiState,
+    modifier: Modifier = Modifier
+) {
+//    val state by viewModel.breakingNewsStateFlow.collectAsState()
+//    val liveData by viewModel.breakingNewsLiveData.observeAsState()
 
-    when (liveData) {
-        is NetworkResult.Error -> {
-            (liveData as NetworkResult.Error<NewsResponse>).errorMsg?.let {
-                ErrorState(value = it)
-            }
+    when (breakingNewsUiState) {
+        is BreakingNewsUiState.Success -> {
+            NewsContent(response = breakingNewsUiState.data)
         }
 
-        is NetworkResult.Loading -> {
+        is BreakingNewsUiState.Loading -> {
             ErrorState(value = "Loading..")
         }
 
-        is NetworkResult.Success -> {
-            (liveData as NetworkResult.Success<NewsResponse>).data?.let { newsResponse ->
-                NewsContent(response = newsResponse)
-            }
+        is BreakingNewsUiState.Failure -> {
+            ErrorState(value = "Failure..")
         }
-        null -> {
+
+        BreakingNewsUiState.UnInitialized -> {
 
         }
     }

@@ -45,12 +45,23 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.msarangal.newsapp.ui.EntertainmentNewsUiState
+import com.msarangal.newsapp.ui.HealthNewsUiState
 import com.msarangal.newsapp.ui.NewsViewModel
+import com.msarangal.newsapp.ui.SportsNewsUiState
+import com.msarangal.newsapp.ui.TechNewsUiState
 import com.msarangal.newsapp.util.NewsTabsManager
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SearchScreen(viewModel: NewsViewModel) {
+fun SearchScreen(
+    onSearchTriggered: (String) -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
+    healthNewsUiState: HealthNewsUiState,
+    sportsNewsUiState: SportsNewsUiState,
+    techNewsUiState: TechNewsUiState,
+    entertainmentNewsUiState: EntertainmentNewsUiState
+) {
     val newsTabs = NewsTabsManager.newsTabs
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -68,8 +79,8 @@ fun SearchScreen(viewModel: NewsViewModel) {
         modifier = Modifier.fillMaxSize()
     ) {
         TopView(
-            onSearchQueryChanged = viewModel::onSearchQueryChanged,
-            onSearchTriggered = viewModel::onSearchTriggered,
+            onSearchQueryChanged = onSearchQueryChanged,
+            onSearchTriggered = onSearchTriggered,
         )
         Spacer(modifier = Modifier.size(16.dp))
         ScrollableTabRow(
@@ -105,10 +116,10 @@ fun SearchScreen(viewModel: NewsViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 when (pageIndex) {
-                    0 -> HealthView(viewModel = viewModel)
-                    1 -> SportsView(viewModel = viewModel)
-                    2 -> TechnologyView(viewModel = viewModel)
-                    3 -> PoliticsView(viewModel = viewModel)
+                    0 -> HealthView(healthNewsUiState)
+                    1 -> SportsView(sportsNewsUiState)
+                    2 -> TechnologyView(techNewsUiState)
+                    3 -> PoliticsView(entertainmentNewsUiState)
                 }
             }
         }
@@ -183,7 +194,7 @@ fun SearchView(
         onValueChange = {
             searchQuery = it
             onSearchQueryChanged(it)
-                        },
+        },
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
